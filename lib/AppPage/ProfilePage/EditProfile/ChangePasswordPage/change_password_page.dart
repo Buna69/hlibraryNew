@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hlibrary/global/toast.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -19,7 +18,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   changePassword() {
     // Implement your password change logic here
     // For example, you could simulate a change by showing a toast message
-    showToastMsg(message: "Password Changed");
+
   }
 
   @override

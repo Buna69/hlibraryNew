@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
-import '../../../Global/toast.dart';
 import '../widgets/menu_widget.dart';
 import 'ChangePasswordPage/change_password_page.dart';
 
@@ -20,8 +19,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   changePassword() {
     // Implement your password change logic here
-    // For example, you could simulate a change by showing a toast message
-    showToastMsg(message: "Profile Saved");
+
   }
 
   Future<void> _showDeleteConfirmationDialog() async {
@@ -49,8 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: const Text('Yes'),
               onPressed: () {
                 // Implement delete account logic here
-                // For example, you could show a toast message
-                showToastMsg(message: "Account Deleted");
+
                 Navigator.of(context).pop();
               },
             ),

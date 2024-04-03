@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hlibrary/AppPage/ProfilePage/AboutUsPage/about_us_page.dart';
 import 'package:hlibrary/AppPage/ProfilePage/SendFeedbackPage/send_feedback_page.dart';
 import 'package:hlibrary/AppPage/ProfilePage/widgets/menu_widget.dart';
+import 'package:hlibrary/Global/toast.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
 import '../../StartPage/Login/login_page.dart';
@@ -84,9 +87,15 @@ class ProfilePage extends StatelessWidget {
                 textColor: Colors.red,
                 endIcon: false,
                 onPress: () {
-                  //FirebaseAuth.instance.signOut();
-                  Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                  const LoginPage()));
+                  FirebaseAuth.instance.signOut();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Logged out'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+
+
                 },
               ),
             ],

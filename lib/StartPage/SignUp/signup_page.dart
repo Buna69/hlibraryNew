@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hlibrary/Global/Firebase/Authentications/SignUp/controller.dart';
 import 'package:hlibrary/StartPage/Login/login_page.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -11,18 +13,8 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final bool _isSigning = false;
   bool _isObscure = true;
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  final controller = Get.put(SignUpController());
+  final  _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -85,8 +77,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                     border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.background)),
                                   ),
                                   child: TextFormField(
-                                    controller: _usernameController,
-                                    onChanged: (value) {},
+                                    controller: controller.username,
+                                    onChanged: (value) {
+
+                                    },
                                     decoration: const InputDecoration(
                                       hintText: "Username",
                                       prefixIcon: Icon(Icons.person_outlined),
@@ -102,8 +96,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ),
                                   child: TextFormField(
                                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                                    controller: _emailController,
-                                    onChanged: (value) {},
+                                    controller: controller.email,
+                                    onChanged: (value) {
+
+                                    },
                                     decoration: const InputDecoration(
                                       hintText: "Email",
                                       prefixIcon: Icon(Icons.email_outlined),
@@ -118,9 +114,11 @@ class _SignUpPageState extends State<SignUpPage> {
                                     border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.background)),
                                   ),
                                   child: TextFormField(
-                                    controller: _passwordController,
+                                    controller: controller.password,
                                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                                    onChanged: (value) {},
+                                    onChanged: (value) {
+
+                                    },
                                     obscureText: _isObscure,
                                     decoration: InputDecoration(
                                       prefixIcon: const Icon(Icons.lock_outline),
@@ -164,7 +162,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           const SizedBox(height: 40),
                           MaterialButton(
                             onPressed: () {
-                              // Handle Sign In
+                              if(_formKey.currentState!.validate()){
+                                SignUpController.instance.registerUser();
+                              }
                             },
                             height: 50,
                             color: const Color(0xFFFFB800),

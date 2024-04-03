@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hlibrary/AppPage/PageManager/pages.dart';
+import 'package:get/get.dart';
+import 'package:hlibrary/Global/Firebase/Authentications/Login/controller.dart';
 import 'package:hlibrary/StartPage/ForgotPassword/forgotpassword_page.dart';
 
 import '../SignUp/signup_page.dart';
@@ -12,18 +13,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final bool _isSigning = false;
   bool _isObscure = true;
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final controller = Get.put(SignInController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   child: TextFormField(
                                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                                    controller: _emailController,
+                                    controller: controller.email,
                                     onChanged: (value) {},
                                     decoration: const InputDecoration(
                                       hintText: "Email",
@@ -104,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                                     border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.background)),
                                   ),
                                   child: TextFormField(
-                                    controller: _passwordController,
+                                    controller: controller.password,
                                     autovalidateMode: AutovalidateMode.onUserInteraction,
                                     onChanged: (value) {},
                                     obscureText: _isObscure,
@@ -172,24 +164,21 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 40),
                           MaterialButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const Pages(),
-                                ),
-                              );
+                              if(_formKey.currentState!.validate()){
+                                SignInController.instance.login();
+                              }
                             },
                             height: 50,
                             color: const Color(0xFFFFB800),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50),
                             ),
-                            child: Center(
-                              child: _isSigning
-                                  ? const CircularProgressIndicator(color: Color.fromARGB(255, 0, 0, 0))
-                                  : const Text("Sign In", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                            child: const Center(
+                                  child: Text("Sign In", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+
                             ),
                           ),
+
                         ],
                       ),
                     ),
