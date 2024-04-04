@@ -50,8 +50,8 @@ class AboutUsPage extends StatelessWidget {
         ),
        const SizedBox(width: 10),
         Container(
-          width: 150,
-          height: 150,
+          width: 120,
+          height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
             image: DecorationImage(

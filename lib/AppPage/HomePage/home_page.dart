@@ -1,12 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
+
 import 'package:flutter/material.dart';
-import 'package:hlibrary/AppPage/HomePage/InsideCategory/inside_category_page.dart';
 import 'package:hlibrary/AppPage/HomePage/widgets/best_choices_cell.dart';
 import 'package:hlibrary/AppPage/HomePage/widgets/category.dart';
 import 'package:hlibrary/AppPage/HomePage/widgets/top_picks_cell.dart';
 
 import '../BookDetailPage/book_detail.dart';
 import '../SearchPage/search_page.dart';
+import 'InsideCategory/inside_category_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,25 +27,25 @@ class _HomePageState extends State<HomePage> {
     {
       "name": "Manhwa2",
       "author": "Author1",
-      "images": "assets/images/1.jpg",
+      "images": "assets/images/2.jpg",
       "description": "Description1",
     },
     {
       "name": "Manhwa3",
       "author": "Author1",
-      "images": "assets/images/1.jpg",
+      "images": "assets/images/3.jpg",
       "description": "Description1",
     },
     {
       "name": "Manhwa4",
       "author": "Author1",
-      "images": "assets/images/1.jpg",
+      "images": "assets/images/4.jpg",
       "description": "Description1",
     },
     {
       "name": "Manhwa5",
       "author": "Author1",
-      "images": "assets/images/1.jpg",
+      "images": "assets/images/5.jpg",
       "description": "Description1",
     }
   ];
@@ -53,18 +54,18 @@ class _HomePageState extends State<HomePage> {
     {
       "name": "Manhwa1",
       "author": "Author1",
-      "images": "assets/images/1.jpg",
+      "images": "assets/images/6.jpg",
       "description": "Description1",},
     {
       "name": "Manhwa2",
       "author": "Author1",
-      "images": "assets/images/1.jpg",
+      "images": "assets/images/7.jpg",
       "description": "Description1",
     },
     {
       "name": "Manhwa3",
       "author": "Author1",
-      "images": "assets/images/1.jpg",
+      "images": "assets/images/8.jpg",
       "description": "Description1",
     }
   ];
@@ -72,7 +73,7 @@ class _HomePageState extends State<HomePage> {
   List cate = [
     {"category": "Manga"},
     {"category": "Manhwa"},
-    {"category": "Yomama"},
+    {"category": "Educational"},
   ];
 
   Map<String, List<Map<String, dynamic>>> catBookMap = {
@@ -80,13 +81,13 @@ class _HomePageState extends State<HomePage> {
       {
         "name": "Manga1",
         "author": "Author1",
-        "images": "assets/images/1.jpg",
+        "images": "assets/images/7.jpg",
         "description": " snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn iasnfi snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  snidnsaifnisdf n idsfn  ni dsfnisn difndsio ao sn  ",
       },
       {
         "name": "Manga2",
         "author": "Author2",
-        "images": "assets/images/2.jpg",
+        "images": "assets/images/6.jpg",
         "description": "Description2",
       },
       // Add more manga books...
@@ -95,31 +96,31 @@ class _HomePageState extends State<HomePage> {
       {
         "name": "Manhwa1",
         "author": "Author1",
-        "images": "assets/images/3.jpg",
+        "images": "assets/images/5.jpg",
         "description": "Description1",
       },
       {
         "name": "Manhwa2",
         "author": "Author2",
-        "images": "assets/images/2.jpg",
+        "images": "assets/images/4.jpg",
         "description": "Description2",
       },
       // Add more manhwa books...
     ],
-    "Yomama": [
+    "Educational": [
       {
-        "name": "Yomama1",
+        "name": "Educational1",
         "author": "Author1",
-        "images": "assets/images/4.jpg",
+        "images": "assets/images/3.jpg",
         "description": "Description1",
       },
       {
-        "name": "Yomama2",
+        "name": "Educational2",
         "author": "Author2",
         "images": "assets/images/2.jpg",
         "description": "Description2",
       },
-      // Add more yomama books...
+      // Add more Educational books...
     ],
   };
 

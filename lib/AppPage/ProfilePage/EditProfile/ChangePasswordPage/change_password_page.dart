@@ -1,24 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ChangePasswordPage extends StatefulWidget {
-  const ChangePasswordPage({super.key});
+  const ChangePasswordPage({Key? key}) : super(key: key);
 
   @override
-  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
+  _ChangePasswordPageState createState() => _ChangePasswordPageState();
 }
 
-bool _isObscure = true;
-TextEditingController _newPasswordController = TextEditingController();
-TextEditingController _oldPasswordController = TextEditingController();
 class _ChangePasswordPageState extends State<ChangePasswordPage> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  var newPassword = "";
+  bool _isObscureNew = true;
+  TextEditingController _newPasswordController = TextEditingController();
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isObscureNew = !_isObscureNew;
+    });
+  }
 
-  changePassword() {
-    // Implement your password change logic here
-    // For example, you could simulate a change by showing a toast message
+  Future<void> _changePassword() async {
+    try {
+      // Change the password
+      await FirebaseAuth.instance.currentUser!.updatePassword(_newPasswordController.text.trim());
 
+      // Navigate back
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password changed successfully'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      print('Error changing password: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error changing password. Please try again.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   @override
@@ -46,88 +68,40 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             children: [
               const SizedBox(height: 50),
               Form(
-                key: _formKey,
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
                     TextFormField(
-                      controller: _oldPasswordController,
-                      onChanged: (value) {},
-                      obscureText: _isObscure,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
-                          child: Icon(
-                            _isObscure ? Icons.visibility_off : Icons.visibility,
-                            color: const Color(0xFFFFB800),
-                          ),
-                        ),
-                        label: const Text("Old Password"),
-                        hintStyle: const TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a correct password';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
                       controller: _newPasswordController,
                       onChanged: (value) {},
-                      obscureText: _isObscure,
+                      obscureText: _isObscureNew,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
+                          onTap: _togglePasswordVisibility,
                           child: Icon(
-                            _isObscure ? Icons.visibility_off : Icons.visibility,
+                            _isObscureNew ? Icons.visibility_off : Icons.visibility,
                             color: const Color(0xFFFFB800),
                           ),
                         ),
-                        label: const Text("New Password"),
-                        hintStyle: const TextStyle(color: Colors.grey),
+                        labelText: "New Password",
+                        labelStyle: const TextStyle(color: Colors.grey),
                         border: InputBorder.none,
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 50),
                     SizedBox(
                       height: 50,
                       width: double.infinity,
                       child: MaterialButton(
-                        onPressed: () {
-                          if (_formKey.currentState?.validate() ?? false) {
-                            setState(() {
-                              newPassword = _newPasswordController.text;
-                            });
-                            changePassword(); // Call your password change function here
-                          }
-                        },
+                        onPressed: _changePassword,
                         height: 50,
                         color: const Color(0xFFFFB800),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
                         ),
                         child: const Center(
-                          child: Text("Confirm", style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                          child: Text("Confirm", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ),

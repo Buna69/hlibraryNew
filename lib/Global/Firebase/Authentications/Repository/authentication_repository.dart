@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hlibrary/AppPage/app_page.dart';
 import 'package:hlibrary/StartPage/SignUp/signup_page.dart';
+import 'package:hlibrary/StartPage/splash_screen.dart';
 import '../../../../StartPage/Login/login_page.dart';
 import 'Exceptions/signin_email_failure.dart';
 import 'Exceptions/signup_email_failure.dart';
@@ -30,7 +31,7 @@ class AuthenticationRepository extends GetxController {
 
   _setInitialScreen(User? user) {
     if (user == null) {
-      Get.offAll(() => const LoginPage());
+      Get.offAll(() => const SplashScreen());
     } else {
       Get.offAll(() => const AppPage());
     }
@@ -39,14 +40,16 @@ class AuthenticationRepository extends GetxController {
 
 
   //FUNC
-  Future<void> createUserWithEmailAndPassword(
+  Future<UserCredential> createUserWithEmailAndPassword(
       String email,
       String password,
       {Function? onSuccess}
       ) async {
     try {
       // Your authentication logic here
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      var authResult = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      firebaseUser.value = authResult.user; // Update firebaseUser.value with the authenticated user
+      // Navigate the user to the appropriate page based on authentication status
       firebaseUser.value != null ? Get.offAll(() => const AppPage()) : Get.to(() => const SignUpPage());
 
       ScaffoldMessenger.of(Get.context!).showSnackBar(
@@ -56,7 +59,9 @@ class AuthenticationRepository extends GetxController {
         ),
       );
 
+
       onSuccess?.call(); // Call the onSuccess callback if provided
+      return authResult; // Return the user authentication information
     } on FirebaseAuthException catch (e) {
       final ex = SignUpWithEmailAndPasswordFailure();
       ex.show(Get.context!, e.code); // Pass the BuildContext along with the error code
@@ -103,6 +108,6 @@ class AuthenticationRepository extends GetxController {
 
   Future<void> logout() async {
     await _auth.signOut();
-    Get.offAll(() => const LoginPage());
+    Get.offAll(() => const SplashScreen());
   }
 }

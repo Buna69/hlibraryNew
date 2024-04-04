@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hlibrary/Global/Firebase/Authentications/Models/user_model.dart';
 import 'package:hlibrary/Global/Firebase/Authentications/SignUp/controller.dart';
 import 'package:hlibrary/StartPage/Login/login_page.dart';
 
@@ -161,11 +163,16 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                           const SizedBox(height: 40),
                           MaterialButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if(_formKey.currentState!.validate()){
-                                SignUpController.instance.registerUser();
+                                SignUpController.instance.registerUser(
+                                  controller.username.text,
+                                  controller.email.text,
+                                  controller.password.text,);
                               }
+
                             },
+
                             height: 50,
                             color: const Color(0xFFFFB800),
                             shape: RoundedRectangleBorder(

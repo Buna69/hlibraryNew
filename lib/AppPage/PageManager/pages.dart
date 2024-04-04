@@ -59,7 +59,7 @@ class _PagesState extends State<Pages> {
           controller: _pageController,
           children: const [
             FirstPage(key: PageStorageKey('FirstPage')),
-            SecondPage(key: PageStorageKey('SeconPage')),
+            SecondPage(key: PageStorageKey('SecondPage')),
             ThirdPage(key: PageStorageKey('ThirdPage')),
           ],
         ),

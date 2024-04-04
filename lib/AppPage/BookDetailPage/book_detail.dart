@@ -41,7 +41,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(top: 60, left: 10, right: 10),
+          padding: const EdgeInsets.only(top: 110,),
           child: Column(
             children: [
               // Container for book details with background image
