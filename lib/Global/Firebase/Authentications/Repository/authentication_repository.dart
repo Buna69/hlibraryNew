@@ -38,7 +38,6 @@ class AuthenticationRepository extends GetxController {
   }
 
 
-
   //FUNC
   Future<UserCredential> createUserWithEmailAndPassword(
       String email,

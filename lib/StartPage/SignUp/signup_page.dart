@@ -1,7 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hlibrary/Global/Firebase/Authentications/Models/user_model.dart';
 import 'package:hlibrary/Global/Firebase/Authentications/SignUp/controller.dart';
 import 'package:hlibrary/StartPage/Login/login_page.dart';
 

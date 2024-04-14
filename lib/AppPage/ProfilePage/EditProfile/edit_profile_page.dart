@@ -1,23 +1,53 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:hlibrary/StartPage/splash_screen.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../widgets/menu_widget.dart';
 import 'ChangePasswordPage/change_password_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class EditProfilePage extends StatefulWidget {
   final VoidCallback? onProfileUpdated;
 
-  const EditProfilePage({Key? key, this.onProfileUpdated}) : super(key: key);
+   EditProfilePage({Key? key, this.onProfileUpdated}) : super(key: key);
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  UploadTask? uploadTask;
+  PlatformFile? pickedFile;
   final TextEditingController _newNameController = TextEditingController();
   final TextEditingController _newEmailController = TextEditingController();
+  Future selectFile() async {
+    final result = await FilePicker.platform.pickFiles();
+    if(result==null) return;
+
+    setState((){
+      pickedFile = result.files.first;;
+    });
+  }
+  Future uploadFile() async {
+    final path = 'userProfilePic/${pickedFile!.name}';
+    final file = File(pickedFile!.path!);
+
+    final ref = FirebaseStorage.instance.ref().child(path);
+    setState(() {
+      uploadTask = ref.putFile(file);
+
+    });
+    final snapshot = await uploadTask!.whenComplete((){});
+
+    final urlDownload = await snapshot.ref.getDownloadURL();
+    print('Download Link: $urlDownload');
+    setState(() {
+      uploadTask = null;
+    });
+  }
 
   void saveProfile() async {
     String newUsername = _newNameController.text.trim();
@@ -39,7 +69,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
         // Update email in Firebase Authentication
         await FirebaseAuth.instance.currentUser!.updateEmail(newEmail);
-
+        uploadFile();
         // Invoke the callback to notify the parent widget (Pages) about the profile update
         widget.onProfileUpdated?.call();
 
@@ -159,23 +189,36 @@ class _EditProfilePageState extends State<EditProfilePage> {
             children: [
               Stack(
                 children: [
-                  const CircleAvatar(
-                    radius: 65,
-                    backgroundImage: AssetImage('assets/images/default.png'),
-                  ),
+                  if (pickedFile != null)
+                    Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.file(
+                          File (pickedFile!.path!),
+                          fit:BoxFit.cover
+                      ),
+
+                    )
+                  else
+                    CircleAvatar(
+                      radius: 65,
+                      backgroundImage: AssetImage('assets/images/default.png'),
+                    ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: Container(
                       width: 40,
                       height: 40,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Color(0xFFFFB800),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(LineAwesomeIcons.retro_camera),
-                        onPressed: () {},
+                        icon: Icon(LineAwesomeIcons.retro_camera),
+                        onPressed: selectFile,
                       ),
                     ),
                   ),
@@ -183,6 +226,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
               const SizedBox(height: 10),
               const SizedBox(height: 50),
+              // Rest of the code remains unchanged
+
               StreamBuilder<DocumentSnapshot>(
                 stream: FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).snapshots(),
                 builder: (context, snapshot) {

@@ -166,7 +166,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
                         child: Row(
                           children: [
                             Icon(inLibrary ? Icons.favorite : Icons.favorite_outline_outlined, size: 25), // Icon
-                            const SizedBox(width: 5),
+                            const SizedBox(height: 10),
                             Text(inLibrary ? "In Library" : "Add to Library", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                           ],
                         ),
