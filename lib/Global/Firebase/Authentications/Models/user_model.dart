@@ -11,6 +11,7 @@ class UserModel {
 
   Map<String, dynamic> toJson() {
     return {
+      "admin": "no",
       "id": id, // Include id in the JSON representation
       "username": username,
       "email": email,

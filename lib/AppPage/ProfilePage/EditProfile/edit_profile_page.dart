@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:hlibrary/StartPage/splash_screen.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import '../../app_page.dart';
 import '../widgets/menu_widget.dart';
 import 'ChangePasswordPage/change_password_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,7 +13,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 class EditProfilePage extends StatefulWidget {
   final VoidCallback? onProfileUpdated;
 
-   EditProfilePage({Key? key, this.onProfileUpdated}) : super(key: key);
+  EditProfilePage({Key? key, this.onProfileUpdated}) : super(key: key);
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -23,55 +24,121 @@ class _EditProfilePageState extends State<EditProfilePage> {
   PlatformFile? pickedFile;
   final TextEditingController _newNameController = TextEditingController();
   final TextEditingController _newEmailController = TextEditingController();
+  Map<String, dynamic>? userDataMap;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  void fetchUserData() async {
+    var userDataSnapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    if (userDataSnapshot.exists) {
+      setState(() {
+        userDataMap = userDataSnapshot.data() as Map<String, dynamic>?;
+        var username = userDataMap?['username'] ?? 'Username';
+        var email = userDataMap?['email'] ?? 'Email';
+        _newNameController.text = username;
+        _newEmailController.text = email;
+      });
+    }
+  }
+
   Future selectFile() async {
     final result = await FilePicker.platform.pickFiles();
-    if(result==null) return;
+    if (result == null) return;
 
-    setState((){
-      pickedFile = result.files.first;;
+    setState(() {
+      pickedFile = result.files.first;
     });
   }
+
   Future uploadFile() async {
     final path = 'userProfilePic/${pickedFile!.name}';
     final file = File(pickedFile!.path!);
 
     final ref = FirebaseStorage.instance.ref().child(path);
+
     setState(() {
       uploadTask = ref.putFile(file);
-
     });
-    final snapshot = await uploadTask!.whenComplete((){});
 
-    final urlDownload = await snapshot.ref.getDownloadURL();
-    print('Download Link: $urlDownload');
-    setState(() {
-      uploadTask = null;
-    });
+    try {
+      final snapshot = await uploadTask!;
+      final urlDownload = await snapshot.ref.getDownloadURL();
+      print('Download Link: $urlDownload');
+    } catch (e) {
+      print('Error uploading file: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          uploadTask = null;
+        });
+      }
+    }
   }
 
   void saveProfile() async {
     String newUsername = _newNameController.text.trim();
     String newEmail = _newEmailController.text.trim();
 
-    if (newUsername.isNotEmpty && newEmail.isNotEmpty) {
+    if (userDataMap == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error fetching user data'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    var currentUsername = userDataMap?['username'] ?? '';
+    var currentEmail = userDataMap?['email'] ?? '';
+
+    bool hasChanges = newUsername != currentUsername ||
+        newEmail != currentEmail ||
+        pickedFile != null;
+
+    if (hasChanges) {
       try {
-        // Update username in Firestore
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .update({'username': newUsername});
+        if (newUsername.isNotEmpty && newUsername != currentUsername) {
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .update({'username': newUsername});
+          setState(() {
+            userDataMap?['username'] = newUsername;
+          });
+        }
 
-        // Update email in Firestore
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .update({'email': newEmail});
+        if (newEmail.isNotEmpty && newEmail != currentEmail) {
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .update({'email': newEmail});
 
-        // Update email in Firebase Authentication
-        await FirebaseAuth.instance.currentUser!.updateEmail(newEmail);
-        uploadFile();
-        // Invoke the callback to notify the parent widget (Pages) about the profile update
-        widget.onProfileUpdated?.call();
+          await FirebaseAuth.instance.currentUser!.updateEmail(newEmail);
+          setState(() {
+            userDataMap?['email'] = newEmail;
+          });
+        }
+
+        if (pickedFile != null) {
+          await uploadFile();
+          String? profilePicUrl = await getProfilePicUrl();
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .update({'profilePic': profilePicUrl});
+          setState(() {
+            userDataMap?['profilePic'] = profilePicUrl;
+          });
+        }
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -79,7 +146,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             duration: Duration(seconds: 1),
           ),
         );
-
       } catch (e) {
         print('Error updating profile: $e');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -92,10 +158,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Username and email cannot be empty'),
+          content: Text('No changes to save'),
           duration: Duration(seconds: 1),
         ),
       );
+    }
+  }
+
+
+
+  Future<String?> getProfilePicUrl() async {
+    if (pickedFile != null) {
+      final path = 'userProfilePic/${pickedFile!.name}';
+      final ref = FirebaseStorage.instance.ref().child(path);
+      final urlDownload = await ref.getDownloadURL();
+      return urlDownload;
+    } else {
+      return null;
     }
   }
 
@@ -124,16 +203,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: const Text('Yes'),
               onPressed: () async {
                 try {
-                  // Delete user data from Firestore
                   await FirebaseFirestore.instance
                       .collection('Users')
                       .doc(FirebaseAuth.instance.currentUser!.uid)
                       .delete();
 
-                  // Delete user from Firebase Authentication
                   await FirebaseAuth.instance.currentUser!.delete();
 
-                  // Show a confirmation message
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Account deleted successfully'),
@@ -191,20 +267,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 children: [
                   if (pickedFile != null)
                     Container(
-                      height: 100,
+                      width: 150,
+                      height: 150,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                       ),
                       child: Image.file(
-                          File (pickedFile!.path!),
-                          fit:BoxFit.cover
+                        File(pickedFile!.path!),
+                        fit: BoxFit.cover,
                       ),
-
+                    )
+                  else if (userDataMap != null && userDataMap!.containsKey('profilePic'))
+                    Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(userDataMap!['profilePic']),
+                        ),
+                      ),
                     )
                   else
-                    CircleAvatar(
-                      radius: 65,
-                      backgroundImage: AssetImage('assets/images/default.png'),
+                    Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: AssetImage('assets/images/default.png'),
+                        ),
+                      ),
                     ),
                   Positioned(
                     bottom: 0,
@@ -226,48 +320,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
               const SizedBox(height: 10),
               const SizedBox(height: 50),
-              // Rest of the code remains unchanged
-
-              StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (snapshot.hasData && snapshot.data != null) {
-                    var userData = snapshot.data as DocumentSnapshot;
-                    var userDataMap = userData.data() as Map<String, dynamic>?; // Cast to Map<String, dynamic> or nullable
-                    var username = userDataMap?['username'] ?? 'Username'; // Safely access data with null check
-                    var email = userDataMap?['email'] ?? 'Email'; // Safely access data with null check
-                    _newNameController.text = username; // Set the username to the text controller
-                    _newEmailController.text = email; // Set the email to the text controller
-                    return Column(
-                      children: [
-                        TextFormField(
-                          controller: _newNameController,
-                          onChanged: (value) {},
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.person_outlined),
-                            hintText: 'Username',
-                            hintStyle: TextStyle(color: Colors.grey),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextFormField(
-                          controller: _newEmailController,
-                          onChanged: (value) {},
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.email_outlined),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ],
-                    );
-                  } else {
-                    return const Text('Error fetching user data');
-                  }
-                },
+              Column(
+                children: [
+                  TextFormField(
+                    controller: _newNameController,
+                    onChanged: (value) {},
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.person_outlined),
+                      hintText: 'Username',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _newEmailController,
+                    onChanged: (value) {},
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.email_outlined),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               MenuWidget(
@@ -286,7 +360,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
               SizedBox(
                 width: 200,
                 child: MaterialButton(
-                  onPressed: saveProfile,
+                  onPressed:() {
+                    saveProfile();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AppPage(), // Replace AppPage with your desired destination
+                      ),
+                    );
+                  },
+
                   height: 50,
                   color: const Color(0xFFFFB800),
                   shape: RoundedRectangleBorder(
@@ -297,10 +380,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 230),
+              const SizedBox(height: 180),
               Row(
                 children: [
-                  const Text(""), // Placeholder for creation time
+                  const Text(""),
                   const Spacer(),
                   SizedBox(
                     width: 100,

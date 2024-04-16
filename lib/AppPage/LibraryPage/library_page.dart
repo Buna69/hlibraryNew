@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-class Book {
+class booka {
   final String name;
   final String imageUrl;
 
-  Book({required this.name, required this.imageUrl});
+  booka({required this.name, required this.imageUrl});
 }
 
 class LibraryPage extends StatelessWidget {
-  final List<Book> books = [
-    Book(name: 'Shoujin Manga', imageUrl: 'assets/images/1.jpg'),
-    Book(name: 'Jujutsu Kaisen', imageUrl: 'assets/images/2.jpg'),
-    Book(name: 'The Faraway Paladin', imageUrl: 'assets/images/3.jpg'),
-    Book(name: 'My Hero Academia', imageUrl: 'assets/images/4.jpg'),
+  final List<booka> bookas = [
+    booka(name: 'Shoujin Manga', imageUrl: 'assets/images/1.jpg'),
+    booka(name: 'Jujutsu Kaisen', imageUrl: 'assets/images/2.jpg'),
+    booka(name: 'The Faraway Paladin', imageUrl: 'assets/images/3.jpg'),
+    booka(name: 'My Hero Academia', imageUrl: 'assets/images/4.jpg'),
 
   ];
 
@@ -33,7 +33,7 @@ class LibraryPage extends StatelessWidget {
           crossAxisSpacing: 10.0,
           mainAxisSpacing: 10.0,
         ),
-        itemCount: books.length,
+        itemCount: bookas.length,
         itemBuilder: (context, index) {
           return SizedBox(
             width: width,
@@ -44,7 +44,7 @@ class LibraryPage extends StatelessWidget {
                 child: Stack(
                   children: [
                     Image.asset(
-                      books[index].imageUrl,
+                      bookas[index].imageUrl,
                       fit: BoxFit.fill,
                       height: height,
                     ),
@@ -57,7 +57,7 @@ class LibraryPage extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(5.0),
                           child: Text(
-                            books[index].name,
+                            bookas[index].name,
                             style: const TextStyle(
                               fontSize: 18.0,
                               fontWeight: FontWeight.bold,
