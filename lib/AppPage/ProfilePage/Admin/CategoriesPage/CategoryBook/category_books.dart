@@ -303,7 +303,7 @@ class _CategoryBooksState extends State<CategoryBooks> {
 }
 
 class Book {
-  final String name;
+  late final String name;
   final String author;
   final String description;
   final String coverUrl;
