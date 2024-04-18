@@ -108,8 +108,11 @@ class _CategoryBooksState extends State<CategoryBooks> {
     String authorName = '';
     String description = '';
 
+    bool isAddingBook = false;
+
     showDialog(
       context: context,
+      barrierDismissible: !isAddingBook, // Prevent closing the dialog while adding book
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
@@ -188,36 +191,62 @@ class _CategoryBooksState extends State<CategoryBooks> {
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
-                    setState(() {
-                      _image = null; // Reset _image
-                      _pdf = null;   // Reset _pdf
-                    });
-                    Navigator.of(context).pop();
+                    if (!isAddingBook) {
+                      setState(() {
+                        _image = null; // Reset _image
+                        _pdf = null; // Reset _pdf
+                      });
+                      Navigator.of(context).pop();
+                    }
                   },
                   child: Text('Cancel'),
                 ),
                 TextButton(
-                  onPressed: () {
-                    if (bookName.isNotEmpty &&
-                        authorName.isNotEmpty &&
-                        _image != null &&
-                        _pdf != null &&
-                        description.isNotEmpty) {
-                      addBookToCollection(bookName, authorName, description);
+                  onPressed: () async {
+                    if (!isAddingBook) {
                       setState(() {
-                        _image = null; // Reset _image
-                        _pdf = null;   // Reset _pdf
+                        isAddingBook = true;
                       });
-                      Navigator.of(context).pop();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Please enter book name, author name, description, select an image, and select a PDF.'),
-                        ),
-                      );
+                      try {
+                        if (bookName.isNotEmpty &&
+                            authorName.isNotEmpty &&
+                            _image != null &&
+                            _pdf != null &&
+                            description.isNotEmpty) {
+                          await addBookToCollection(bookName, authorName, description);
+                          setState(() {
+                            _image = null; // Reset _image
+                            _pdf = null; // Reset _pdf
+                            isAddingBook = false;
+                          });
+                          Navigator.of(context).pop();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Please enter book name, author name, description, select an image, and select a PDF.'),
+                            ),
+                          );
+                          setState(() {
+                            isAddingBook = false;
+                          });
+                        }
+                      } catch (error) {
+                        print('Error adding book: $error');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to add book. Please try again later.'),
+                          ),
+                        );
+                        setState(() {
+                          isAddingBook = false;
+                        });
+                      }
                     }
                   },
-                  child: Text('OK'),
+                  child: isAddingBook
+                      ? CircularProgressIndicator() // Show loading indicator while adding book
+                      : Text('OK'),
                 ),
               ],
             );
@@ -254,7 +283,7 @@ class _CategoryBooksState extends State<CategoryBooks> {
     );
   }
 
-  void addBookToCollection(String bookName, String authorName, String description) async {
+  Future<void> addBookToCollection(String bookName, String authorName, String description) async {
     try {
       final Reference imageRef = FirebaseStorage.instance.ref().child('bookCover').child(bookName);
       final Reference pdfRef = FirebaseStorage.instance.ref().child('bookPDF').child(bookName);
@@ -276,7 +305,7 @@ class _CategoryBooksState extends State<CategoryBooks> {
       final imageDownloadUrl = await (await imageUploadTask).ref.getDownloadURL();
       final pdfDownloadUrl = await (await pdfUploadTask).ref.getDownloadURL();
 
-      FirebaseFirestore.instance.collection('categories').doc(widget.categoryName).collection('Book Collection').doc(bookName).set({
+      await FirebaseFirestore.instance.collection('categories').doc(widget.categoryName).collection('Book Collection').doc(bookName).set({
         'name': bookName,
         'author': authorName,
         'description': description,
@@ -287,6 +316,7 @@ class _CategoryBooksState extends State<CategoryBooks> {
       print('Book added successfully');
     } catch (error) {
       print('Failed to add book: $error');
+      throw error; // Rethrow the error to handle it in _showAddBookDialog
     }
   }
 

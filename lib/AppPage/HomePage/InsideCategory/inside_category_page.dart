@@ -5,16 +5,14 @@ class InsideCategoryPage extends StatelessWidget {
   final String category;
   final List<Map<String, dynamic>> books;
 
-  const InsideCategoryPage({super.key, required this.category, required this.books});
+  const InsideCategoryPage({Key? key, required this.category, required this.books})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Padding(
-          padding: const EdgeInsets.only(right: 80),
-          child: Center(child: Text(category)),
-        ),
+        title: Center(child: Text(category)),
       ),
       body: ListView.builder(
         itemCount: books.length,
@@ -36,8 +34,8 @@ class InsideCategoryPage extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      book['images'],
+                    child: Image.network(
+                      book['coverUrl'], // Assuming 'coverUrl' is the key for cover image URL
                       width: 100, // Adjust width as needed
                       height: 150, // Adjust height as needed
                       fit: BoxFit.cover,
@@ -61,7 +59,7 @@ class InsideCategoryPage extends StatelessWidget {
                         // Show only a portion of the description with ellipsis
                         Text(
                           book['description'],
-                          maxLines: 3, // Show only 2 lines
+                          maxLines: 3, // Show only 3 lines
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 14),
                         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_text/flutter_expandable_text.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import 'category_books.dart'; // Import Book class from another file
@@ -25,7 +24,7 @@ class CategoryBookDetail extends StatelessWidget {
               Center(
                 child: Image.network(
                   book.coverUrl,
-                  width: 150,
+                  width: 180,
                   height: 250,
                   fit: BoxFit.fill,
                 ),

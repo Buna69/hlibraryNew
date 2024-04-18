@@ -1,14 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hlibrary/AppPage/HomePage/home_page.dart';
 import 'package:hlibrary/AppPage/ProfilePage/profile_page.dart';
-import '../LibraryPage//library_page.dart';
+import '../LibraryPage/library_page.dart';
 import '../SearchPage/widgets/search_bar_with_clear.dart';
 
 class FirstPage extends StatefulWidget {
-  const FirstPage({super.key});
+  const FirstPage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _FirstPageState createState() => _FirstPageState();
 }
 
@@ -17,9 +18,9 @@ class _FirstPageState extends State<FirstPage> with AutomaticKeepAliveClientMixi
   Widget build(BuildContext context) {
     super.build(context);
 
-
     return const Scaffold(
-      body: HomePage(),);
+      body: HomePage(),
+    );
   }
 
   @override
@@ -27,22 +28,49 @@ class _FirstPageState extends State<FirstPage> with AutomaticKeepAliveClientMixi
 }
 
 class SecondPage extends StatefulWidget {
-  const SecondPage({super.key});
+  const SecondPage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _SecondPageState createState() => _SecondPageState();
 }
 
 class _SecondPageState extends State<SecondPage> with AutomaticKeepAliveClientMixin {
+  List<Map<String, dynamic>> books = []; // Add books list
+
+  @override
+  void initState() {
+    super.initState();
+    fetchBooks(); // Fetch books data
+  }
+
+  Future<void> fetchBooks() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final userDoc = FirebaseFirestore.instance.collection('Users').doc(currentUser.uid);
+
+      final docSnapshot = await userDoc.get();
+      if (docSnapshot.exists) {
+        final List<dynamic>? library = docSnapshot.data()?['library'] as List<dynamic>?;
+        if (library == null || library.isEmpty) {
+          setState(() {
+            books = [];
+          });
+        } else {
+          setState(() {
+            books = List<Map<String, dynamic>>.from(library);
+          });
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
-
-    return  Scaffold(
-      appBar: const SearchBarWithClearButton(),
-      body: LibraryPage(),);
+    return Scaffold(
+      body: LibraryPage(books: books), // Pass books data to LibraryPage
+    );
   }
 
   @override
@@ -51,10 +79,9 @@ class _SecondPageState extends State<SecondPage> with AutomaticKeepAliveClientMi
 
 
 class ThirdPage extends StatefulWidget {
-  const ThirdPage({super.key});
+  const ThirdPage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _ThirdPageState createState() => _ThirdPageState();
 }
 
@@ -62,7 +89,6 @@ class _ThirdPageState extends State<ThirdPage> with AutomaticKeepAliveClientMixi
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
 
     return const Scaffold(
       body: ProfilePage(),
@@ -72,5 +98,3 @@ class _ThirdPageState extends State<ThirdPage> with AutomaticKeepAliveClientMixi
   @override
   bool get wantKeepAlive => true;
 }
-
-

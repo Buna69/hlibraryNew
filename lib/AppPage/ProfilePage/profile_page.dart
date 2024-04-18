@@ -72,13 +72,7 @@ class ProfilePage extends StatelessWidget {
                         ),
 
                         const SizedBox(height: 20),
-                        const Divider(),
-                        const SizedBox(height: 10),
-                        MenuWidget(
-                          title: "Download History",
-                          icon: LineAwesomeIcons.download,
-                          onPress: () {},
-                        ),
+
                         if (isAdmin) // Conditionally render Admin menu widget
                           MenuWidget(
                             title: "Admin",
